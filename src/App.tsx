@@ -1,23 +1,25 @@
 import React from 'react';
-import logo from './logo.svg';
+import { Synth, Transport } from 'tone';
 import './App.css';
 
 function App() {
+  var synth = new Synth().toMaster();
+  
+  function triggerSynth(time: string | number){
+    //the time is the sample-accurate time of the event
+    synth.triggerAttackRelease('C4', '8n', time)
+  }
+  
+  //schedule a few notes
+  Transport.schedule(triggerSynth, "0")
+  Transport.loopEnd = "1m";
+  Transport.loop = true;
+  Transport.toggle();
+
   return (
     <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
+        Enjoy the C
       </header>
     </div>
   );
