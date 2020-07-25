@@ -1,12 +1,21 @@
 import React from 'react';
-import { Transport, PolySynth, context } from 'tone';
+import { Transport, FMSynth, PolySynth, context } from 'tone';
 import './App.css';
 import { Mood, scales } from './scales';
 import { getRandomChordType } from './chords';
 import { convertMidNoteToFrequency } from './util';
 
 function App(): JSX.Element {
-  const synth = new PolySynth().toDestination();
+  const synth = new PolySynth(FMSynth).toDestination();
+  synth.set({
+    envelope: {
+      attack: 0.2,
+      decay: 0.7,
+      sustain: 0.4,
+      release: 0.2,
+    },
+    modulationIndex: 2,
+  });
 
   const play = async () => {
     await context.resume();
