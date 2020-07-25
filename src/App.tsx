@@ -1,25 +1,24 @@
-import React from 'react';
+import React, { Component } from 'react';
 import { Synth, Transport } from 'tone';
 import './App.css';
 
-function App() {
-  var synth = new Synth().toMaster();
-  
-  function triggerSynth(time: string | number){
+function App(): JSX.Element {
+  const synth = new Synth().toDestination();
+
+  function triggerSynth(time: string | number) {
     //the time is the sample-accurate time of the event
-    synth.triggerAttackRelease('C4', '8n', time)
+    synth.triggerAttackRelease('C2', '8n', time);
   }
-  
   //schedule a few notes
-  Transport.schedule(triggerSynth, "0")
-  Transport.loopEnd = "1m";
+  Transport.schedule(triggerSynth, '0');
+  Transport.loopEnd = '1m';
   Transport.loop = true;
-  Transport.toggle();
 
   return (
     <div className="App">
       <header className="App-header">
-        Enjoy the C
+        <p>Enjoy the C</p>
+        <button onClick={() => Transport.toggle()}>Toggle the C</button>
       </header>
     </div>
   );
