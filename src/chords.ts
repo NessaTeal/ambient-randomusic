@@ -4,10 +4,5 @@ export const chords = {
 };
 
 export function getRandomChordType(): number[] {
-  const chooser = Math.random();
-  if (chooser < 0.5) {
-    return chords.simple;
-  } else {
-    return chords.sept;
-  }
+  return chords.simple;
 }

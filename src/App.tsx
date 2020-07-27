@@ -9,43 +9,53 @@ function App(): JSX.Element {
   const synth = new PolySynth(FMSynth).toDestination();
   synth.set({
     envelope: {
-      attack: 0.2,
-      decay: 0.7,
-      sustain: 0.4,
-      release: 0.2,
+      attack: '8n',
+      decay: '16n',
+      sustain: 0.5,
+      release: '16n',
     },
     modulationIndex: 2,
   });
 
+  const [playing, setPlaying] = React.useState(false);
+
   const play = async () => {
+    if (playing) {
+      return;
+    } else {
+      setPlaying(true);
+    }
     await context.resume();
 
-    const rootNote = 40 + Math.floor(Math.random() * 12);
-    const mood = Math.random() > 0.5 ? Mood.MAJOR : Mood.MINOR;
-    const secondNote =
-      rootNote + scales[mood][1 + Math.floor(Math.random() * 6)].distance;
+    let note = 40 + Math.floor(Math.random() * 12);
+    let mood = Math.random() > 0.5 ? Mood.MAJOR : Mood.MINOR;
 
-    const firstChord = getRandomChordType().map((num) =>
-      convertMidNoteToFrequency(rootNote + scales[mood][num].distance),
-    );
-    const secondChord = getRandomChordType().map((num) =>
-      convertMidNoteToFrequency(secondNote + scales[mood][num].distance),
-    );
+    Transport.schedule(() => {
+      const chord = getRandomChordType().map((num) =>
+        convertMidNoteToFrequency(note + scales[mood][num].distance),
+      );
+      const newChordData = scales[mood][1 + Math.floor(Math.random() * 6)];
+      note += newChordData.distance;
+      mood = newChordData.mood;
+      if (note >= 60) {
+        note -= Math.random() > 0.5 ? 24 : 12;
+      }
 
-    Transport.scheduleOnce(() => {
-      synth.triggerAttackRelease(firstChord, '2n');
-      synth.triggerAttackRelease(secondChord, '2n', '+2n');
+      synth.triggerAttackRelease(chord, '1m');
     }, '0');
 
+    Transport.loop = true;
+    Transport.loopEnd = '1m';
+
     Transport.start();
-    Transport.stop('+1m');
   };
 
   return (
     <div className="App">
       <header className="App-header">
         <p>RIP headphone users</p>
-        <button onClick={play}>Play two random chords</button>
+        <button onClick={play}>Start playing random sequence</button>
+        {playing && <p>Already playing, no disabling button for you!</p>}
       </header>
     </div>
   );
