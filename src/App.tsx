@@ -4,6 +4,8 @@ import './App.css';
 import { Mood, scales } from './scales';
 import { getRandomChordType } from './chords';
 import { convertMidNoteToFrequency } from './util';
+import { useRandomusicState } from './randomusic-context';
+import Progressions from './progressions';
 
 function App(): JSX.Element {
   const synth = new PolySynth(FMSynth).toDestination();
@@ -18,6 +20,37 @@ function App(): JSX.Element {
   });
 
   const [playing, setPlaying] = React.useState(false);
+  const state = useRandomusicState();
+
+  const baseNote = 48;
+  const mood = Mood.MINOR;
+
+  React.useEffect(() => {
+    Transport.bpm.value = 180;
+  }, []);
+
+  React.useEffect(() => {
+    const eventIds = state.progression.notes.map((note, index) => {
+      return Transport.scheduleRepeat(
+        () => {
+          synth.triggerAttackRelease(
+            getRandomChordType().map((num) =>
+              convertMidNoteToFrequency(
+                baseNote + note + scales[mood][num].distance,
+              ),
+            ),
+            '1m',
+          );
+        },
+        `${state.progression.notes.length}m`,
+        `${index}m`,
+      );
+    });
+
+    return () => {
+      eventIds.forEach((id) => Transport.clear(id));
+    };
+  }, [state.progression]);
 
   const play = async () => {
     if (playing) {
@@ -27,34 +60,15 @@ function App(): JSX.Element {
     }
     await context.resume();
 
-    let note = 40 + Math.floor(Math.random() * 12);
-    let mood = Math.random() > 0.5 ? Mood.MAJOR : Mood.MINOR;
-
-    Transport.schedule(() => {
-      const chord = getRandomChordType().map((num) =>
-        convertMidNoteToFrequency(note + scales[mood][num].distance),
-      );
-      const newChordData = scales[mood][1 + Math.floor(Math.random() * 6)];
-      note += newChordData.distance;
-      mood = newChordData.mood;
-      if (note >= 60) {
-        note -= Math.random() > 0.5 ? 24 : 12;
-      }
-
-      synth.triggerAttackRelease(chord, '1m');
-    }, '0');
-
-    Transport.loop = true;
-    Transport.loopEnd = '1m';
-
     Transport.start();
   };
 
   return (
     <div className="App">
       <header className="App-header">
-        <p>RIP headphone users</p>
+        <p>Dynamic change of sequence. Such feature, much wow.</p>
         <button onClick={play}>Start playing random sequence</button>
+        <Progressions />
         {playing && <p>Already playing, no disabling button for you!</p>}
       </header>
     </div>
