@@ -1,6 +1,6 @@
 export enum Mood {
-  MINOR,
-  MAJOR,
+  MINOR = 'minor',
+  MAJOR = 'major',
 }
 
 export const scales = {

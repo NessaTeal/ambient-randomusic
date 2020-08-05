@@ -3,7 +3,7 @@ import { Transport, FMSynth, PolySynth, context } from 'tone';
 import './App.css';
 import { Mood, scales } from './scales';
 import { getRandomChordType } from './chords';
-import { convertMidNoteToFrequency } from './util';
+import { convertMidiNoteToFrequency, convertMidiNoteToRealNote } from './util';
 import { useRandomusicState } from './randomusic-context';
 import Progressions from './progressions';
 
@@ -20,9 +20,8 @@ function App(): JSX.Element {
   });
 
   const [playing, setPlaying] = React.useState(false);
+  const [baseNote, setBaseNote] = React.useState(48);
   const state = useRandomusicState();
-
-  const baseNote = 48;
   const mood = Mood.MINOR;
 
   React.useEffect(() => {
@@ -35,7 +34,7 @@ function App(): JSX.Element {
         () => {
           synth.triggerAttackRelease(
             getRandomChordType().map((num) =>
-              convertMidNoteToFrequency(
+              convertMidiNoteToFrequency(
                 baseNote + note + scales[mood][num].distance,
               ),
             ),
@@ -50,7 +49,7 @@ function App(): JSX.Element {
     return () => {
       eventIds.forEach((id) => Transport.clear(id));
     };
-  }, [state.progression]);
+  }, [state.progression, baseNote]);
 
   const play = async () => {
     if (playing) {
@@ -69,6 +68,14 @@ function App(): JSX.Element {
         <p>Dynamic change of sequence. Such feature, much wow.</p>
         <button onClick={play}>Start playing random sequence</button>
         <Progressions />
+        <p>
+          Playing in the key {convertMidiNoteToRealNote(baseNote)} {mood}
+        </p>
+        <input
+          type="number"
+          value={baseNote}
+          onChange={(event) => setBaseNote(+event.target.value)}
+        />
         {playing && <p>Already playing, no disabling button for you!</p>}
       </header>
     </div>
