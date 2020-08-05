@@ -3,18 +3,36 @@ import {
   useRandomusicDispatch,
   useRandomusicState,
 } from './randomusic-context';
+import { Scale } from './scales';
+
+interface Chord {
+  note: number;
+  scale: Scale;
+  duration: number;
+}
 
 export interface Progression {
   label: string;
-  notes: number[];
+  chords: Chord[];
 }
 
 export const progressions: Progression[] = [
-  { label: '1-5-6-4 progression', notes: [0, 4, 5, 3] },
-  { label: '2-5-1 progression', notes: [1, 4, 0, 0] },
   {
-    label: 'basic 12-bar blues',
-    notes: [0, 0, 0, 0, 3, 3, 0, 0, 4, 3, 0, 0],
+    label: 'I-V-vi-IV progression',
+    chords: [
+      { note: 0, scale: Scale.MAJOR, duration: 1 },
+      { note: 4, scale: Scale.MAJOR, duration: 1 },
+      { note: 5, scale: Scale.MINOR, duration: 1 },
+      { note: 3, scale: Scale.MAJOR, duration: 1 },
+    ],
+  },
+  {
+    label: 'ii-V-I progression',
+    chords: [
+      { note: 1, scale: Scale.MINOR, duration: 1 },
+      { note: 4, scale: Scale.MAJOR, duration: 1 },
+      { note: 0, scale: Scale.MAJOR, duration: 2 },
+    ],
   },
 ];
 

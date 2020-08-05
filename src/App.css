@@ -24,15 +24,11 @@
   padding-top: 20%;
 }
 
-.App-link {
-  color: #61dafb;
+.note-selector-container {
+  display: flex;
+  align-items: center;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.note-selector {
+  margin-left: 32px;
 }

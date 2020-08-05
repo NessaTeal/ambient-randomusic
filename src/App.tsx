@@ -1,7 +1,7 @@
 import React from 'react';
 import { Transport, FMSynth, PolySynth, context } from 'tone';
 import './App.css';
-import { Mood, scales } from './scales';
+import { scales } from './scales';
 import { getRandomChordType } from './chords';
 import { convertMidiNoteToFrequency, convertMidiNoteToRealNote } from './util';
 import { useRandomusicState } from './randomusic-context';
@@ -22,28 +22,35 @@ function App(): JSX.Element {
   const [playing, setPlaying] = React.useState(false);
   const [baseNote, setBaseNote] = React.useState(48);
   const state = useRandomusicState();
-  const mood = Mood.MINOR;
 
   React.useEffect(() => {
     Transport.bpm.value = 180;
   }, []);
 
   React.useEffect(() => {
-    const eventIds = state.progression.notes.map((note, index) => {
-      return Transport.scheduleRepeat(
+    let durationPassed = 0;
+    const totalDuration = state.progression.chords.reduce((acc, cur) => {
+      return acc + cur.duration;
+    }, 0);
+    const eventIds = state.progression.chords.map((chord) => {
+      const { note, scale, duration } = chord;
+      const eventId = Transport.scheduleRepeat(
         () => {
           synth.triggerAttackRelease(
             getRandomChordType().map((num) =>
               convertMidiNoteToFrequency(
-                baseNote + note + scales[mood][num].distance,
+                baseNote + note + scales[scale][num].distance,
               ),
             ),
-            '1m',
+            `${duration}m`,
           );
         },
-        `${state.progression.notes.length}m`,
-        `${index}m`,
+        `${totalDuration}m`,
+        `${durationPassed}m`,
       );
+      durationPassed += duration;
+
+      return eventId;
     });
 
     return () => {
@@ -66,16 +73,17 @@ function App(): JSX.Element {
     <div className="App">
       <header className="App-header">
         <p>Dynamic change of sequence. Such feature, much wow.</p>
-        <button onClick={play}>Start playing random sequence</button>
+        <button onClick={play}>Start playing selected progression</button>
         <Progressions />
-        <p>
-          Playing in the key {convertMidiNoteToRealNote(baseNote)} {mood}
-        </p>
-        <input
-          type="number"
-          value={baseNote}
-          onChange={(event) => setBaseNote(+event.target.value)}
-        />
+        <div className="note-selector-container">
+          <p>Playing in the key {convertMidiNoteToRealNote(baseNote)}</p>
+          <input
+            type="number"
+            value={baseNote}
+            onChange={(event) => setBaseNote(+event.target.value)}
+            className="note-selector"
+          />
+        </div>
         {playing && <p>Already playing, no disabling button for you!</p>}
       </header>
     </div>
