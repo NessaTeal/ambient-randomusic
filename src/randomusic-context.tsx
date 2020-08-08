@@ -1,7 +1,9 @@
 import React from 'react';
 import { Progression, progressions } from './progressions';
+import { FMSynth, PolySynth } from 'tone';
 
 interface State {
+  synth: PolySynth<FMSynth>;
   progression: Progression;
 }
 const RandomusicStateContext = React.createContext<State | undefined>(
@@ -9,10 +11,10 @@ const RandomusicStateContext = React.createContext<State | undefined>(
 );
 
 type Dispatch = (action: Action) => void;
-interface Action {
+type Action = {
   type: 'setProgression';
   progression: Progression;
-}
+};
 const RandomusicDispatchContext = React.createContext<Dispatch | undefined>(
   undefined,
 );
@@ -20,10 +22,7 @@ const RandomusicDispatchContext = React.createContext<Dispatch | undefined>(
 function randomusicReducer(state: State, action: Action) {
   switch (action.type) {
     case 'setProgression': {
-      return { progression: action.progression };
-    }
-    default: {
-      throw new Error(`Unhandled action type: ${action.type}`);
+      return { ...state, progression: action.progression };
     }
   }
 }
@@ -35,6 +34,7 @@ export function RandomusicProvider({
 }): JSX.Element {
   const [state, dispatch] = React.useReducer(randomusicReducer, {
     progression: progressions[0],
+    synth: new PolySynth(FMSynth).toDestination(),
   });
 
   return (

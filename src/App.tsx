@@ -1,27 +1,17 @@
 import React from 'react';
-import { Transport, FMSynth, PolySynth, context } from 'tone';
+import { Transport, context } from 'tone';
 import './App.css';
 import { scales } from './scales';
 import { getRandomChordType } from './chords';
 import { convertMidiNoteToFrequency, convertMidiNoteToRealNote } from './util';
 import { useRandomusicState } from './randomusic-context';
 import Progressions from './progressions';
+import Synth from './synth';
 
 function App(): JSX.Element {
-  const synth = new PolySynth(FMSynth).toDestination();
-  synth.set({
-    envelope: {
-      attack: '8n',
-      decay: '16n',
-      sustain: 0.5,
-      release: '16n',
-    },
-    modulationIndex: 2,
-  });
-
   const [playing, setPlaying] = React.useState(false);
   const [baseNote, setBaseNote] = React.useState(48);
-  const state = useRandomusicState();
+  const { progression, synth } = useRandomusicState();
 
   React.useEffect(() => {
     Transport.bpm.value = 180;
@@ -29,10 +19,10 @@ function App(): JSX.Element {
 
   React.useEffect(() => {
     let durationPassed = 0;
-    const totalDuration = state.progression.chords.reduce((acc, cur) => {
+    const totalDuration = progression.chords.reduce((acc, cur) => {
       return acc + cur.duration;
     }, 0);
-    const eventIds = state.progression.chords.map((chord) => {
+    const eventIds = progression.chords.map((chord) => {
       const { note, scale, duration } = chord;
       const eventId = Transport.scheduleRepeat(
         () => {
@@ -56,7 +46,7 @@ function App(): JSX.Element {
     return () => {
       eventIds.forEach((id) => Transport.clear(id));
     };
-  }, [state.progression, baseNote]);
+  }, [synth, progression, baseNote]);
 
   const play = async () => {
     if (playing) {
@@ -72,7 +62,7 @@ function App(): JSX.Element {
   return (
     <div className="App">
       <header className="App-header">
-        <p>Dynamic change of sequence. Such feature, much wow.</p>
+        <p>Synth variables added. Modulation index is the most fun one.</p>
         <button onClick={play}>Start playing selected progression</button>
         <Progressions />
         <div className="note-selector-container">
@@ -84,6 +74,8 @@ function App(): JSX.Element {
             className="note-selector"
           />
         </div>
+        <p>Synth variables</p>
+        <Synth />
         {playing && <p>Already playing, no disabling button for you!</p>}
       </header>
     </div>
